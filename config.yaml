@@ -1,0 +1,4 @@
+http_addr: ":8080"
+log_level: "info"
+log_format: "text"
+migrations_path: "file://migrations"
