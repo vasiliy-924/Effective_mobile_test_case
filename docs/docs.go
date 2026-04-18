@@ -351,12 +351,18 @@ const docTemplate = `{
         },
         "github_com_wassiliy_subscriptions-service_internal_domain.CreateSubscription": {
             "type": "object",
+            "required": [
+                "service_name",
+                "start_date",
+                "user_id"
+            ],
             "properties": {
                 "end_date": {
                     "type": "string"
                 },
                 "price": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "service_name": {
                     "type": "string"

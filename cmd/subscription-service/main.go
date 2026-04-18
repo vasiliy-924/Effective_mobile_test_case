@@ -65,7 +65,11 @@ func main() {
 	repo := repository.NewSubscription(pool)
 	svc := service.NewSubscription(repo, log)
 	h := handler.New(svc)
-	router := handler.NewRouter(log, h)
+	router := handler.NewRouter(log, h, handler.RateLimitRouterConfig{
+		Enabled:      cfg.RateLimitEnabled,
+		MaxRequests:  cfg.RateLimitMaxRequests,
+		WindowLength: cfg.RateLimitWindow,
+	})
 
 	srv := &http.Server{
 		Addr:              cfg.HTTPAddr,

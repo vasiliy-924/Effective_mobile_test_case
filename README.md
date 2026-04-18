@@ -43,7 +43,9 @@ make up
 | `make down` | Остановить и убрать контейнеры |
 | `make logs` | `docker compose logs -f` |
 | `make build` | Сборка бинарника в `bin/subscription-service` |
-| `make test` | Тесты |
+| `make test` | Юнит-тесты (без интеграционных) |
+| `make test-integration` | Интеграционные тесты API + Postgres (`-tags=integration`; нужен Docker или `TEST_DATABASE_URL`) |
+| `make test-all` | `make test` и `make test-integration` |
 | `make swagger` | Перегенерация `docs/` (`go generate ./cmd/subscription-service`) |
 
 ## API (кратко)
@@ -76,8 +78,13 @@ make up
 Поле `end_date` опционально. Даты — строки `MM-YYYY`.
 
 
+## Интеграционные тесты
+
+Команда `make test-integration` поднимает PostgreSQL через [testcontainers](https://golang.testcontainers.org/) и прогоняет HTTP-сценарии. Нужен запущенный Docker. Если Docker недоступен, тесты **пропускаются** (`SKIP`). Альтернатива без контейнера: задать `TEST_DATABASE_URL` на уже поднятую БД с применёнными миграциями — тогда Postgres из testcontainers не используется.
+
 ## Конфигурация
 
 - Обязательно: `DATABASE_URL`.
 - Опционально: `HTTP_ADDR` (по умолчанию `:8080`), `LOG_LEVEL`, `LOG_FORMAT` (`text` \| `json`), `MIGRATIONS_PATH` (по умолчанию `file://migrations`), `DB_CONNECT_RETRIES`, `DB_CONNECT_RETRY_WAIT`.
+- Rate limiting только для префикса `/api/v1`: `RATE_LIMIT_ENABLED` (по умолчанию `true`), `RATE_LIMIT_MAX_REQUESTS` (например `300` за окно), `RATE_LIMIT_WINDOW` (например `1m`). При превышении лимита ответ **429** и JSON `{ "error": "rate limit exceeded" }`; `/healthz` и Swagger без ограничений.
 - Если переменная `CONFIG_YAML` **не задана**, читается `./config.yaml` при наличии файла; если задать `CONFIG_YAML` пустой строкой, YAML пропускается. Переменные окружения перекрывают значения из YAML (дефолты из файла подставляются до `env.Parse`).

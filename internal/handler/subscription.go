@@ -9,16 +9,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
+	"github.com/wassiliy/subscriptions-service/internal/apperrors"
 	"github.com/wassiliy/subscriptions-service/internal/domain"
-	"github.com/wassiliy/subscriptions-service/internal/repository"
 	"github.com/wassiliy/subscriptions-service/internal/service"
 )
 
 type Handler struct {
-	svc *service.Subscription
+	svc SubscriptionService
 }
 
-func New(svc *service.Subscription) *Handler {
+func New(svc SubscriptionService) *Handler {
 	return &Handler{svc: svc}
 }
 
@@ -222,9 +222,9 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 
 func mapErr(w http.ResponseWriter, err error) {
 	switch {
-	case errors.Is(err, repository.ErrNotFound):
+	case errors.Is(err, apperrors.ErrNotFound):
 		writeError(w, http.StatusNotFound, "not found")
-	case errors.Is(err, repository.ErrInvalidArgument):
+	case errors.Is(err, apperrors.ErrInvalidArgument):
 		writeError(w, http.StatusBadRequest, err.Error())
 	default:
 		writeError(w, http.StatusInternalServerError, "internal error")

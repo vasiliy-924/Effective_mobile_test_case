@@ -10,13 +10,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/wassiliy/subscriptions-service/internal/apperrors"
 	"github.com/wassiliy/subscriptions-service/internal/domain"
 	"github.com/wassiliy/subscriptions-service/internal/pkg/month"
-)
-
-var (
-	ErrNotFound        = errors.New("subscription not found")
-	ErrInvalidArgument = errors.New("invalid argument")
 )
 
 type Subscription struct {
@@ -30,16 +26,16 @@ func NewSubscription(pool *pgxpool.Pool) *Subscription {
 func (r *Subscription) Create(ctx context.Context, in domain.CreateSubscription) (domain.Subscription, error) {
 	start, err := month.Parse(in.StartDate)
 	if err != nil {
-		return domain.Subscription{}, fmt.Errorf("%w: start_date: %v", ErrInvalidArgument, err)
+		return domain.Subscription{}, fmt.Errorf("%w: start_date: %v", apperrors.ErrInvalidArgument, err)
 	}
 	var endPtr *time.Time
 	if in.EndDate != nil && *in.EndDate != "" {
 		e, err := month.Parse(*in.EndDate)
 		if err != nil {
-			return domain.Subscription{}, fmt.Errorf("%w: end_date: %v", ErrInvalidArgument, err)
+			return domain.Subscription{}, fmt.Errorf("%w: end_date: %v", apperrors.ErrInvalidArgument, err)
 		}
 		if e.Before(start) {
-			return domain.Subscription{}, fmt.Errorf("%w: end_date before start_date", ErrInvalidArgument)
+			return domain.Subscription{}, fmt.Errorf("%w: end_date before start_date", apperrors.ErrInvalidArgument)
 		}
 		endPtr = &e
 	}
@@ -61,7 +57,7 @@ FROM subscriptions WHERE id = $1`
 	out, err := scanSubscription(row)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.Subscription{}, ErrNotFound
+			return domain.Subscription{}, apperrors.ErrNotFound
 		}
 		return domain.Subscription{}, err
 	}
@@ -71,16 +67,16 @@ FROM subscriptions WHERE id = $1`
 func (r *Subscription) Update(ctx context.Context, id uuid.UUID, in domain.CreateSubscription) (domain.Subscription, error) {
 	start, err := month.Parse(in.StartDate)
 	if err != nil {
-		return domain.Subscription{}, fmt.Errorf("%w: start_date: %v", ErrInvalidArgument, err)
+		return domain.Subscription{}, fmt.Errorf("%w: start_date: %v", apperrors.ErrInvalidArgument, err)
 	}
 	var endPtr *time.Time
 	if in.EndDate != nil && *in.EndDate != "" {
 		e, err := month.Parse(*in.EndDate)
 		if err != nil {
-			return domain.Subscription{}, fmt.Errorf("%w: end_date: %v", ErrInvalidArgument, err)
+			return domain.Subscription{}, fmt.Errorf("%w: end_date: %v", apperrors.ErrInvalidArgument, err)
 		}
 		if e.Before(start) {
-			return domain.Subscription{}, fmt.Errorf("%w: end_date before start_date", ErrInvalidArgument)
+			return domain.Subscription{}, fmt.Errorf("%w: end_date before start_date", apperrors.ErrInvalidArgument)
 		}
 		endPtr = &e
 	}
@@ -99,7 +95,7 @@ RETURNING id, service_name, price, user_id, start_month, end_month, created_at, 
 	out, err := scanSubscription(row)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.Subscription{}, ErrNotFound
+			return domain.Subscription{}, apperrors.ErrNotFound
 		}
 		return domain.Subscription{}, err
 	}
@@ -113,7 +109,7 @@ func (r *Subscription) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 	if tag.RowsAffected() == 0 {
-		return ErrNotFound
+		return apperrors.ErrNotFound
 	}
 	return nil
 }
@@ -180,7 +176,7 @@ type CostFilter struct {
 
 func (r *Subscription) TotalCostForPeriod(ctx context.Context, f CostFilter) (int64, error) {
 	if f.ToMonth.Before(f.FromMonth) {
-		return 0, fmt.Errorf("%w: period to before from", ErrInvalidArgument)
+		return 0, fmt.Errorf("%w: period to before from", apperrors.ErrInvalidArgument)
 	}
 
 	hasUser := f.UserID != nil

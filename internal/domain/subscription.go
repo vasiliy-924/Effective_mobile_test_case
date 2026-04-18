@@ -20,11 +20,11 @@ type Subscription struct {
 
 // CreateSubscription is the request body for create (and fields for update).
 type CreateSubscription struct {
-	ServiceName string    `json:"service_name"`
-	Price       int       `json:"price"`
-	UserID      uuid.UUID `json:"user_id"`
-	StartDate   string    `json:"start_date"`
-	EndDate     *string   `json:"end_date,omitempty"`
+	ServiceName string    `json:"service_name" validate:"required"`
+	Price       int       `json:"price" validate:"min=0"`
+	UserID      uuid.UUID `json:"user_id" validate:"required,go_uuid"`
+	StartDate   string    `json:"start_date" validate:"required,month"`
+	EndDate     *string   `json:"end_date,omitempty" validate:"omitempty,month"`
 }
 
 // CostReport is the aggregation response.

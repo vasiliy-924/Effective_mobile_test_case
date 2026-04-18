@@ -1,10 +1,15 @@
-.PHONY: build test swagger run up up-fg down logs
+.PHONY: build test test-integration test-all swagger run up up-fg down logs
 
 build:
 	go build -o bin/subscription-service ./cmd/subscription-service
 
 test:
 	go test ./...
+
+test-integration:
+	go test -tags=integration -count=1 -timeout 120s ./internal/integration/...
+
+test-all: test test-integration
 
 swagger:
 	go generate ./cmd/subscription-service

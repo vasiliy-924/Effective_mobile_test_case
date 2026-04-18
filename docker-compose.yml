@@ -27,6 +27,9 @@ services:
       MIGRATIONS_PATH: file://migrations
       DB_CONNECT_RETRIES: "60"
       DB_CONNECT_RETRY_WAIT: 1s
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_MAX_REQUESTS: "300"
+      RATE_LIMIT_WINDOW: "1m"
     depends_on:
       postgres:
         condition: service_healthy

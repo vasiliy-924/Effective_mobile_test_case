@@ -27,6 +27,10 @@ type Config struct {
 	Migrations  string        `env:"MIGRATIONS_PATH" envDefault:"file://migrations"`
 	DBRetry     int           `env:"DB_CONNECT_RETRIES" envDefault:"30"`
 	DBRetryWait time.Duration `env:"DB_CONNECT_RETRY_WAIT" envDefault:"1s"`
+
+	RateLimitEnabled     bool          `env:"RATE_LIMIT_ENABLED" envDefault:"true"`
+	RateLimitMaxRequests int           `env:"RATE_LIMIT_MAX_REQUESTS" envDefault:"300"`
+	RateLimitWindow      time.Duration `env:"RATE_LIMIT_WINDOW" envDefault:"1m"`
 }
 
 // Load reads optional .env (non-fatal), optional YAML file, then environment variables.
@@ -60,5 +64,15 @@ func Load(yamlPath string) (*Config, error) {
 	if err := env.Parse(&cfg); err != nil {
 		return nil, fmt.Errorf("parse env: %w", err)
 	}
+
+	if cfg.RateLimitEnabled {
+		if cfg.RateLimitMaxRequests <= 0 {
+			cfg.RateLimitMaxRequests = 300
+		}
+		if cfg.RateLimitWindow <= 0 {
+			cfg.RateLimitWindow = time.Minute
+		}
+	}
+
 	return &cfg, nil
 }

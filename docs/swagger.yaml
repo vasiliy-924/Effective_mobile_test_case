@@ -18,6 +18,7 @@ definitions:
       end_date:
         type: string
       price:
+        minimum: 0
         type: integer
       service_name:
         type: string
@@ -25,6 +26,10 @@ definitions:
         type: string
       user_id:
         type: string
+    required:
+    - service_name
+    - start_date
+    - user_id
     type: object
   github_com_wassiliy_subscriptions-service_internal_domain.Subscription:
     properties:
